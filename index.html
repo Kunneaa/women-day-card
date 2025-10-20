@@ -61,11 +61,12 @@
     <div class="layout">
       <div class="left">
         <h1>Chúc mừng <span style="color:var(--gold)">20/10</span></h1>
-        <div class="sub">Gửi em — người làm trái tim anh ấm lên</div>
+        <div class="sub">Gửi Vy</div>
         <div class="wishBox">
           <!-- PERSONALIZE: sửa lời chúc ở đây -->
-          <p id="wish">Em yêu, chúc em ngày 20/10 luôn được yêu thương, cười thật nhiều và sống trọn vẹn từng phút giây. Cảm ơn em đã luôn bên anh.</p>
-          <div class="sign">— Anh</div>
+          <p id="wish">Chúc em có một ngày lễ trọn vẹn niềm vui, ngập tràn hạnh phúc - mặc dù có hơi muộn gồi (☹️). Mong người đẹp có thể trút bỏ hết mọi muộn phiền, nếu như em thấy mệt mỏi quá thì có thể chia sẻ với anh nè. Chúc em luôn tích cực và luôn nở nụ cười trên môi nhaaa.
+</p>
+          <div class="sign">— Bao Nguyen</div>
           <div class="typed" id="typed"></div>
         </div>
 
@@ -168,7 +169,7 @@
 
   // Typed animation (simple)
     const typedEl = document.getElementById('typed');
-    const lines = ['Em là nắng mai của anh','Cám ơn em đã bên anh mỗi ngày','Yêu em rất nhiều ❤️'];
+    const lines = ['Em là nắng mai của anh'];
     let li=0, ci=0;
     function typeStep(){
       if(li>=lines.length) return;
@@ -186,7 +187,7 @@
       wish.style.transform = 'translateY(-10px)';
       wish.style.opacity = '0';
       setTimeout(function () {
-        wish.textContent = 'Em là cả một bầu trời dịu dàng. Chúc em 20/10 tràn đầy yêu thương!';
+        wish.textContent = 'Lần đầu của anh, nếu em không phiền ❤️';
         wish.style.transform = 'none';
         wish.style.opacity = '1';
       }, 600);
