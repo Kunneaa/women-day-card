@@ -57,7 +57,7 @@
 <body>
   <main class="card">
     <canvas class="particle"></canvas>
-    <audio id="bgAudio" playsinline webkit-playsinline preload="none"></audio>
+    <audio id="bgAudio" playsinline webkit-playsinline preload="auto" autoplay loop></audio>
     <div class="layout">
       <div class="left">
         <h1>Chúc mừng <span style="color:var(--gold)">20/10</span></h1>
@@ -87,7 +87,7 @@
 
   <script>
     // Config: đặt URL nhạc vào đây (nếu có). Nếu rỗng, nhạc tắt.
-    const bgMusicUrl = 'https://drive.google.com/uc?export=download&id=1dDp2GgdIACZuYt8276qrQ0FDnCrklFZI';
+    const bgMusicUrl = 'https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3';
 
     // Particle system: hearts + gold sparkles
     const canvas = document.querySelector('canvas.particle');
