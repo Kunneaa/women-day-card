@@ -1,0 +1,251 @@
+<!--
+Updated: Thiệp 20-10 — Animated single-file HTML
+Mô tả: Phiên bản cập nhật theo mẫu video bạn gửi: tông màu hồng/tím ấm, nhấn nhá vàng, hiệu ứng hạt ngọc và chữ viết tay/typed animation, có nút bật/tắt nhạc nền, QR placeholder để bạn thay bằng URL hosting.
+Hướng dẫn sử dụng nhanh:
+1. Mở file này trong canvas để xem mã nguồn đầy đủ (file đã được cập nhật).
+2. Thay nội dung lời chúc trong phần <!-- PERSONALIZE -->.
+3. Nếu muốn nhạc nền: tải MP3 lên hosting và dán URL vào biến `bgMusicUrl` ở đầu file.
+4. Host file lên GitHub Pages / Netlify / Vercel để lấy URL, sau đó tạo QR và thay ảnh trong phần QR placeholder nếu cần.
+-->
+
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#fff0f5" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>Thiệp 20/10 — Chúc em</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+  body{font-family:Inter, 'Segoe UI', Roboto, Arial, sans-serif;background:linear-gradient(180deg,#fff0f5 0%, #fff8fb 35%, #fff4f9 100%);display:flex;align-items:center;justify-content:center;padding:24px}
+  /* touch optimizations */
+  html,button{ -webkit-tap-highlight-color: transparent; }
+  button{ touch-action: manipulation; }
+    .card{width:min(980px,96vw);border-radius:18px;padding:calc(28px + env(safe-area-inset-top));background:linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.9));box-shadow:0 18px 40px rgba(160,60,120,0.12);position:relative;overflow:hidden}
+
+    /* Palette inspired by video */
+    :root{--pink:#f9d8da;--magenta:#9a3f7f;--deep:#7a234d;--gold:#f4ca33}
+
+    .layout{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:center}
+    .left{padding:14px}
+    h1{font-size:40px;color:var(--magenta);margin-bottom:6px}
+    .sub{color:var(--deep);margin-bottom:12px}
+
+    .wishBox{background:linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,255,255,0.55));padding:18px;border-radius:14px;border:1px solid rgba(122,35,77,0.06);box-shadow:inset 0 4px 18px rgba(255,255,255,0.45)}
+    .wishBox p{font-size:18px;color:#4a2a3a;line-height:1.7}
+
+    /* Handwritten signature */
+    .sign{font-family: 'Brush Script MT', 'Segoe Script', cursive;color:var(--deep);font-size:22px;margin-top:10px}
+
+    /* Typed animation */
+    .typed{font-weight:700;font-size:20px;color:var(--magenta);height:28px;margin-top:12px;}
+
+    /* QR side */
+    .right{display:flex;flex-direction:column;align-items:center;gap:12px;padding:12px}
+    .qr{width:260px;height:260px;border-radius:12px;background:linear-gradient(180deg,#fff,#fff9);display:flex;align-items:center;justify-content:center;border:1px solid rgba(0,0,0,0.04)}
+    .hint{font-size:14px;color:#7b5568;text-align:center}
+    .controls{display:flex;gap:10px}
+    .btn{padding:10px 14px;border-radius:10px;background:var(--magenta);color:white;border:none;cursor:pointer;font-weight:600}
+    .btn.secondary{background:transparent;color:var(--deep);border:1px solid rgba(122,35,77,0.08)}
+
+    /* Floating particles & sparkles */
+  canvas.particle{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+
+  /* safe-area note: handled in .card above */
+
+    /* subtle sparkle layer */
+    .sparkle{position:absolute;inset:0;pointer-events:none}
+    .sparkle svg{width:40px;height:40px;opacity:0.9;filter:drop-shadow(0 8px 20px rgba(122,35,77,0.08))}
+
+    @media (max-width:880px){.layout{grid-template-columns:1fr}.right{order:-1}}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <canvas class="particle"></canvas>
+    <audio id="bgAudio" playsinline webkit-playsinline preload="none"></audio>
+    <div class="layout">
+      <div class="left">
+        <h1>Chúc mừng <span style="color:var(--gold)">20/10</span></h1>
+        <div class="sub">Gửi em — người làm trái tim anh ấm lên</div>
+        <div class="wishBox">
+          <!-- PERSONALIZE: sửa lời chúc ở đây -->
+          <p id="wish">Em yêu, chúc em ngày 20/10 luôn được yêu thương, cười thật nhiều và sống trọn vẹn từng phút giây. Cảm ơn em đã luôn bên anh.</p>
+          <div class="sign">— Anh</div>
+          <div class="typed" id="typed"></div>
+        </div>
+
+        <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
+          <button class="btn" id="playSurprise">Gửi lời bất ngờ</button>
+          <button class="btn secondary" id="toggleMusic">Tắt/mở nhạc</button>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="qr" id="qrBox">
+          <!-- Thay src bằng QR thật dẫn tới URL hosted của bạn -->
+          <img id="qrImg" alt="QR" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><rect width='100%' height='100%' fill='%23fff' /><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='14' fill='%239a3f7f'>Quét để mở</text></svg>" style="width:86%;height:86%;object-fit:contain;border-radius:8px;"/>
+        </div>
+        <div class="hint">Quét mã QR để mở thiệp động</div>
+        <div class="controls">
+          <button class="btn" id="downloadBtn">Tải PNG</button>
+          <button class="btn secondary" id="fullBtn">Xem full</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Config: đặt URL nhạc vào đây (nếu có). Nếu rỗng, nhạc tắt.
+    const bgMusicUrl = '';
+
+    // Particle system: hearts + gold sparkles
+    const canvas = document.querySelector('canvas.particle');
+    const ctx = canvas.getContext('2d');
+    // Make canvas retina-aware for iPhones
+    function resize(){
+      const dpr = Math.max(window.devicePixelRatio || 1, 1);
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const parts = [];
+    function rand(min,max){return Math.random()*(max-min)+min}
+    function make(){
+      let type;
+      if (Math.random() < 0.28) {
+        type = 'heart';
+      } else if (Math.random() < 0.35) {
+        type = 'gold';
+      } else {
+        type = 'petal';
+      }
+      return {
+        x: rand(0, canvas.width),
+        y: canvas.height + 20,
+        vx: rand(-0.6, 0.6),
+        vy: rand(-3.5, -1.2),
+        r: rand(6, 22),
+        type: type,
+        rot: rand(0, Math.PI * 2),
+        vr: rand(-0.02, 0.02)
+      };
+    }
+    for(let i=0;i<90;i++) parts.push(make());
+
+    function drawHeart(x,y,r,rot,color){
+      ctx.save(); ctx.translate(x,y); ctx.rotate(rot);
+      ctx.beginPath(); ctx.moveTo(0,-r/2);
+      ctx.bezierCurveTo(r,-r, r, r/2, 0, r);
+      ctx.bezierCurveTo(-r, r/2, -r, -r, 0, -r/2);
+      ctx.closePath(); ctx.fillStyle = color; ctx.fill(); ctx.restore();
+    }
+
+    function loop(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      for(const p of parts){
+        p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        if(p.y < -30 || p.x<-40 || p.x>canvas.width+40){Object.assign(p, make()); p.y = canvas.height+20}
+        if (p.type === 'heart') {
+          drawHeart(p.x, p.y, p.r, p.rot, '#ff8cb0');
+        } else if (p.type === 'gold') {
+          ctx.fillStyle = '#f4ca33';
+          ctx.fillRect(p.x, p.y, p.r / 2, p.r / 2);
+        } else {
+          ctx.fillStyle = '#ffd7e6';
+          ctx.beginPath();
+          ctx.ellipse(p.x, p.y, p.r * 0.6, p.r * 0.9, p.rot, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      requestAnimationFrame(loop);
+    }
+    loop();
+
+  // Typed animation (simple)
+    const typedEl = document.getElementById('typed');
+    const lines = ['Em là nắng mai của anh','Cám ơn em đã bên anh mỗi ngày','Yêu em rất nhiều ❤️'];
+    let li=0, ci=0;
+    function typeStep(){
+      if(li>=lines.length) return;
+      const text = lines[li];
+      typedEl.textContent = text.slice(0,ci);
+      ci++;
+      if(ci>text.length){li++;ci=0; setTimeout(typeStep,800);} else setTimeout(typeStep,50);
+    }
+    setTimeout(typeStep,900);
+
+    // Surprise button for changing message & gentle animation
+    document.getElementById('playSurprise').addEventListener('click', function () {
+      const wish = document.getElementById('wish');
+      wish.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
+      wish.style.transform = 'translateY(-10px)';
+      wish.style.opacity = '0';
+      setTimeout(function () {
+        wish.textContent = 'Em là cả một bầu trời dịu dàng. Chúc em 20/10 tràn đầy yêu thương!';
+        wish.style.transform = 'none';
+        wish.style.opacity = '1';
+      }, 600);
+      playMusic();
+    });
+
+    // Music control (use DOM audio element for better iOS handling)
+    const audioEl = document.getElementById('bgAudio');
+    function initAudio(){
+      if (bgMusicUrl && audioEl.src !== bgMusicUrl) {
+        audioEl.src = bgMusicUrl;
+        audioEl.loop = true;
+        audioEl.volume = 0.45;
+      }
+    }
+    function playMusic(){
+      initAudio();
+      if (audioEl.src) {
+        audioEl.play().catch(function () {});
+      }
+    }
+    document.getElementById('toggleMusic').addEventListener('click', function () {
+      initAudio();
+      if (!audioEl.src) {
+        return alert('Chưa có nhạc: thêm URL vào biến bgMusicUrl');
+      }
+      if (audioEl.paused) {
+        audioEl.play();
+      } else {
+        audioEl.pause();
+      }
+    });
+
+    // Fullscreen (with simple fallback for Safari iOS)
+    document.getElementById('fullBtn').addEventListener('click', async function () {
+      try {
+        if (!document.fullscreenElement) {
+          await document.documentElement.requestFullscreen();
+        } else {
+          await document.exitFullscreen();
+        }
+      } catch (e) {
+        // fallback: open in new tab for devices that don't support fullscreen API
+        window.open(location.href, '_blank');
+      }
+    });
+
+    // Download: advise Print to PDF or screenshot (simple fallback)
+    document.getElementById('downloadBtn').addEventListener('click', ()=>{alert('Để tải ảnh chất lượng, mở trình duyệt > Ctrl+P > Save as PDF hoặc chụp màn hình. Nếu bạn host trang, mình có thể sinh PNG/PDF chất lượng cao.')});
+
+    // Accessibility: focus outline
+    const buttons = document.querySelectorAll('button');
+    for (const b of buttons) {
+      b.addEventListener('focus', function () { b.style.outline = '3px solid rgba(154,63,127,0.14)'; });
+    }
+  </script>
+</body>
+</html>
