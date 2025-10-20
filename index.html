@@ -57,7 +57,7 @@
 <body>
   <main class="card">
     <canvas class="particle"></canvas>
-    <audio id="bgAudio" playsinline webkit-playsinline preload="auto" autoplay loop></audio>
+    <audio id="bgAudio" playsinline webkit-playsinline preload="auto" loop></audio>
     <div class="layout">
       <div class="left">
         <h1>Chúc mừng <span style="color:var(--gold)">20/10</span></h1>
@@ -105,6 +105,7 @@
     resize();
 
     const parts = [];
+    let musicStarted = false;
     function rand(min,max){return Math.random()*(max-min)+min}
     function make(){
       let type;
@@ -156,6 +157,14 @@
       requestAnimationFrame(loop);
     }
     loop();
+
+    // Start music on first click anywhere
+    document.addEventListener('click', function() {
+      if (!musicStarted) {
+        playMusic();
+        musicStarted = true;
+      }
+    }, { once: true });
 
   // Typed animation (simple)
     const typedEl = document.getElementById('typed');
